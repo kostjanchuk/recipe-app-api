@@ -2,7 +2,11 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from decimal import Decimal
-from ..models import Recipe
+from ..models import Recipe, Tag, Ingredient
+
+
+def create_user(email='user@example.com', password='testpassword'):
+    return get_user_model().objects.create_user(email=email, password=password)
 
 
 class ModelTests(TestCase):
@@ -13,10 +17,7 @@ class ModelTests(TestCase):
         email = 'test@example.com'
         password = 'testpassword'
 
-        user = get_user_model().objects.create_user(
-            email=email,
-            password=password
-        )
+        user = create_user(email=email, password=password)
 
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(password))
@@ -32,7 +33,7 @@ class ModelTests(TestCase):
         ]
 
         for email, expected in email_lst:
-            user = get_user_model().objects.create_user(
+            user = create_user(
                 email=email,
                 password="testpassword"
             )
@@ -42,7 +43,7 @@ class ModelTests(TestCase):
         """ Test that creating a user without an email raises a ValueError"""
 
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user('', password='testpassword')
+            create_user('', password='testpassword')
 
     def test_create_superuser(self):
         """Test creating a superuser"""
@@ -58,7 +59,7 @@ class ModelTests(TestCase):
     def test_create_new_recipe(self):
         """Test creating a new recipe is successful"""
 
-        user = get_user_model().objects.create_user(
+        user = create_user(
             email='user@example.com',
             password='testpassword'
 
@@ -73,3 +74,24 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(recipe), recipe.title)
+
+    def test_create_tag(self):
+        """Test crating a tag is successful"""
+
+        user = create_user()
+
+        name = 'Vegan'
+
+        tag = Tag.objects.create(user=user, name=name)
+
+        self.assertEqual(tag.name, name)
+        self.assertEqual(str(tag), name)
+
+    def test_create_ingredient(self):
+        """Test creating ingredient is successful"""
+
+        user = create_user()
+
+        ingredient = Ingredient.objects.create(user=user, name='Ingredient1')
+
+        self.assertEqual(ingredient.name, str(ingredient))
